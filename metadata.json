@@ -1,0 +1,5 @@
+{
+  "name": "NGOC.PRO Text-to-Speech",
+  "description": "A web application that uses the Gemini API to convert text into high-quality speech. Users can select different voices, adjust the speaking rate, and modify the pitch to customize the audio output.",
+  "requestFramePermissions": []
+}
