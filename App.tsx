@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { generateSpeech } from './services/geminiService';
 import { VOICE_OPTIONS, TONE_OPTIONS } from './constants';
@@ -17,7 +18,7 @@ import { HistoryItem } from './types';
 const App: React.FC = () => {
   const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem('gemini_api_key') || '');
   const [isKeySaved, setIsKeySaved] = useState<boolean>(() => !!localStorage.getItem('gemini_api_key'));
-  const [text, setText] = useState<string>('Xin chào! Đây là bản trình diễn giọng nói được tạo bởi NGOC.PRO, chúc bạn triệu view hẹ hẹ');
+  const [text, setText] = useState<string>('Xin chào! Đây là bản trình diễn giọng nói được tạo bởi Anh Ngọc trên Gemini, hãy sáng tạo đi nhé, hẹ hẹ');
   const [selectedVoice, setSelectedVoice] = useState<string>(VOICE_OPTIONS[0].options[0].value);
   const [tone, setTone] = useState<string>('');
   const [customTone, setCustomTone] = useState<string>('');
@@ -37,7 +38,7 @@ const App: React.FC = () => {
     if (apiKey.trim()) {
       localStorage.setItem('gemini_api_key', apiKey.trim());
       setIsKeySaved(true);
-      setError(null);
+      setError(null); // Clear previous errors when a new key is saved
     }
   };
 
@@ -76,6 +77,7 @@ const App: React.FC = () => {
       return;
     }
     
+    // Setup AbortController
     if (abortControllerRef.current) {
         abortControllerRef.current.abort();
     }
@@ -114,6 +116,7 @@ const App: React.FC = () => {
       setGenerationTime(endTime - startTime);
       setAudioData(base64AudioChunks);
 
+      // Add to history
       const voiceLabel = VOICE_OPTIONS.flatMap(c => c.options).find(v => v.value === selectedVoice)?.label.split(':')[0] || selectedVoice;
       
       const newHistoryItem: HistoryItem = {
@@ -129,20 +132,25 @@ const App: React.FC = () => {
 
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') {
+         // Ignore abort errors as they are user initiated
+         console.log('Generation aborted by user');
          return;
       }
 
       console.error('Error generating speech:', err);
       const errorMessage = err instanceof Error ? err.message : 'Đã xảy ra lỗi không xác định. Vui lòng thử lại.';
        if (errorMessage.includes('API key not valid')) {
-          setError('API key không hợp lệ. Vui lòng kiểm tra lại hoặc tạo một key mới.');
-          setIsKeySaved(false);
+          setError('API key không hợp lệ. Vui lòng kiểm tra lại hoặc tạo một key mới. Đừng quên kích hoạt "AI Platform" trong Google Cloud project của bạn.');
+          setIsKeySaved(false); // Force user to re-enter key
       } else {
           setError(errorMessage);
       }
     } finally {
-      if (!abortControllerRef.current?.signal.aborted) {
-        setIsLoading(false);
+      // Only set loading to false if we haven't been aborted (or if aborted, we handled it)
+      if (abortControllerRef.current?.signal.aborted) {
+          // logic handled in handleStopGeneration usually, but ensuring cleanup
+      } else {
+          setIsLoading(false);
       }
       abortControllerRef.current = null;
     }
@@ -160,8 +168,8 @@ const App: React.FC = () => {
   const handleHistoryPlay = (item: HistoryItem) => {
       setAudioData(item.audioData);
       setDefaultFileName(item.fileName);
-      setGenerationTime(null);
-      window.scrollTo({ top: 400, behavior: 'smooth' });
+      setGenerationTime(null); // Clear time since we aren't regenerating
+      window.scrollTo({ top: 400, behavior: 'smooth' }); // Scroll near player
   };
   
 
@@ -226,6 +234,7 @@ const App: React.FC = () => {
           {audioData && !isLoading && <AudioPlayer base64AudioChunks={audioData} generationTime={generationTime} defaultFileName={defaultFileName} />}
         </main>
         
+        {/* History Section */}
         {history.length > 0 && (
             <HistoryList history={history} onPlay={handleHistoryPlay} />
         )}
@@ -233,26 +242,17 @@ const App: React.FC = () => {
 
       <footer className="w-full max-w-2xl mt-16 pt-8 border-t border-gray-800/50 text-center pb-8 animate-fade-in">
         <div className="flex flex-col items-center justify-center gap-3">
-          
-          {/* 🔥 NGOC.PRO clickable link */}
-          <a
-            href="https://ngoc.pro"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-2xl font-bold bg-gradient-to-r from-orange-600 via-amber-500 to-orange-400 text-transparent bg-clip-text drop-shadow-sm tracking-wide cursor-pointer"
-          >
-            NGOC.PRO
-          </a>
-
-          <p className="text-gray-500 text-sm font-medium tracking-wide">
-            Hệ thống chuyển đổi văn bản thành giọng nói chất lượng cao
-          </p>
-
-          <div className="mt-2 text-xs text-gray-600 flex items-center gap-2">
-            <span>&copy; {new Date().getFullYear()} All rights reserved.</span>
-            <span className="w-1 h-1 bg-gray-600 rounded-full"></span>
-            <span>Powered by Gemini AI</span>
-          </div>
+            <div className="text-2xl font-bold bg-gradient-to-r from-orange-600 via-amber-500 to-orange-400 text-transparent bg-clip-text drop-shadow-sm tracking-wide">
+                NGOC.PRO
+            </div>
+            <p className="text-gray-500 text-sm font-medium tracking-wide">
+                Hệ thống chuyển đổi văn bản thành giọng nói chất lượng cao
+            </p>
+            <div className="mt-2 text-xs text-gray-600 flex items-center gap-2">
+                 <span>&copy; {new Date().getFullYear()} All rights reserved.</span>
+                 <span className="w-1 h-1 bg-gray-600 rounded-full"></span>
+                 <span>Powered by Gemini AI</span>
+            </div>
         </div>
       </footer>
     </div>
