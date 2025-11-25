@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   return {
-    base: "/tts/",        // 👈 GIỮ NGUYÊN DÒNG NÀY CHO GITHUB PAGES
+    base: "/tts/",   // 👈 bắt buộc cho GitHub Pages: promaxping.github.io/tts/
 
     server: {
       port: 3000,
