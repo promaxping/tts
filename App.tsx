@@ -243,7 +243,7 @@ const App: React.FC = () => {
       <footer className="w-full max-w-2xl mt-16 pt-8 border-t border-gray-800/50 text-center pb-8 animate-fade-in">
         <div className="flex flex-col items-center justify-center gap-3">
             <div className="text-2xl font-bold bg-gradient-to-r from-orange-600 via-amber-500 to-orange-400 text-transparent bg-clip-text drop-shadow-sm tracking-wide">
-                TTS.NGOC.PRO
+                NGOC.PRO
             </div>
             <p className="text-gray-500 text-sm font-medium tracking-wide">
                 Hệ thống chuyển đổi văn bản thành giọng nói chất lượng cao
